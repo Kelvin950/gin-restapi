@@ -1,0 +1,47 @@
+[
+  {
+   "name": "kelnin",
+   "age": 21,
+   "address": {
+    "city": "accra",
+    "town": "acp",
+    "house_no": 222
+   }
+  },
+  {
+   "name": "kelnin",
+   "age": 21,
+   "address": {
+    "city": "accra",
+    "town": "acp",
+    "house_no": 222
+   }
+  },
+  {
+   "name": "kelnin",
+   "age": 21,
+   "address": {
+    "city": "accra",
+    "town": "acp",
+    "house_no": 222
+   }
+  },
+  {
+   "name": "kelnin",
+   "age": 21,
+   "address": {
+    "city": "accra",
+    "town": "acp",
+    "house_no": 2289
+   }
+  },
+  {
+   "name": "kelnin",
+   "age": 21,
+   "address": {
+    "city": "accra",
+    "town": "acp",
+    "house_no": 2289
+   }
+  }
+ ]

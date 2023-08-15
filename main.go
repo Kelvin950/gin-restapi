@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+
 	"net/http"
 	"os"
 
@@ -26,9 +27,53 @@ type Person  struct{
 }
 
 func fetchAll(ctx *gin.Context){
-   	ctx.JSON(http.StatusOK , gin.H{
-		"hell":"2",
-	})
+ 
+
+	var persons []Person 
+ 
+	file ,err :=  os.OpenFile("data.json" , os.O_RDONLY  , 0644) 
+
+	if  err == nil{
+        
+	 buffReader := bufio.NewReader(file) 
+    
+	 fileinfo ,err  :=  file.Stat() 
+ 
+	   if err == nil {
+	  databyte := make([]byte , fileinfo.Size())
+  buffReader.Read(databyte)
+        
+      err =  json.Unmarshal(databyte ,&persons)
+	  if err == nil {
+
+		ctx.JSON(http.StatusOK , gin.H{
+			"success":true , 
+			"data": persons ,
+		})
+	  }else {
+			ctx.JSON(http.StatusInternalServerError , gin.H{
+			"success":"failed1d1" , 
+			"message":err.Error() ,
+		} )
+	  }
+
+	   }else{
+			ctx.JSON(http.StatusInternalServerError , gin.H{
+			"success":"failed1d1" , 
+			"message":err.Error() ,
+		} )
+	   }
+	
+
+
+	}else{
+			ctx.JSON(http.StatusInternalServerError , gin.H{
+			"success":"failed1d1" , 
+			"message":err.Error() ,
+		} )
+	}
+
+ 
 
 	
 }
@@ -47,35 +92,51 @@ func delete(ctx *gin.Context){
 
 func create(ctx *gin.Context){
     
-  fmt.Printf("%v" , ctx.Request.Body)
- newFile , err := os.OpenFile("data.json", os.O_CREATE |os.O_TRUNC |os.O_RDWR, 0064)
+
+
+ newFile , err := os.OpenFile("data.json", os.O_CREATE|os.O_RDWR, 0644)
   
      if err !=nil{
 
 		ctx.JSON(http.StatusInternalServerError , gin.H{
-			"success":"failed" , 
+			"success":"failedcr" , 
+			"message":err.Error() ,
 		} )
 	 }
     
  
-
+defer newFile.Close()
 	buffreader := bufio.NewReader(newFile)
-fileinfo , err  := newFile.Stat() 
+
      if err !=nil{
 
 		ctx.JSON(http.StatusInternalServerError , gin.H{
-			"success":"failed" , 
+			"success":"failed1d1" , 
+			"message":err.Error() ,
 		} )
 	 }
-var dataByte = make([]byte ,fileinfo.Size() )
+
+	var sizeofByt int64 
+
+	if fileinfo , err := newFile.Stat() ; fileinfo.Size() > 0 {
+		sizeofByt = fileinfo.Size()
+	}else if err != nil{
+		ctx.JSON(http.StatusInternalServerError , gin.H{
+			"success":"failed12" , 
+			"message":err.Error() ,
+		} ) 
+	}else  {
+		sizeofByt = 0
+	}
+	 dataByte :=make([]byte ,sizeofByt )
  buffreader.Read(dataByte)	
+fmt.Printf("qwq%s\n" , dataByte)
+ var personRead []Person
 
- var personRead *[]Person
-
- if err =  json.Unmarshal(dataByte , personRead) ; err !=nil{
+ if err =  json.Unmarshal(dataByte , &personRead) ; err !=nil{
 
 		ctx.JSON(http.StatusInternalServerError , gin.H{
-			"success":"failed" , 
+			"success":"failed1234" , 
 			"message":err.Error() ,
 		} ) 
 	 }
@@ -83,24 +144,37 @@ var dataByte = make([]byte ,fileinfo.Size() )
 	 var person *Person
   if err =  ctx.BindJSON(&person) ; err !=nil{
 		ctx.JSON(http.StatusInternalServerError , gin.H{
-			"success":"failed" , 
+			"success":"failedxfd" , 
 			"message":err.Error() ,
 		} ) 
 
   }
-   
+   fmt.Println(person)
     
-  *personRead =  append(*personRead , *person)  
+  personRead =  append(personRead , *person)  
 
+
+  
+
+os.Remove(newFile.Name()) ;
+
+newFile ,err=  os.Create("data.json")
+ if err !=nil{
+		ctx.JSON(http.StatusInternalServerError , gin.H{
+			"success":"failedxfd" , 
+			"message":err.Error() ,
+		} ) 
+
+  }
  buffWriter :=  bufio.NewWriter(newFile) 
 
    
  
- dataWrite,err := json.Marshal(personRead) 
+ dataWrite,err := json.MarshalIndent(&personRead, " ", " ") 
 
 	if err !=nil{
 		ctx.JSON(http.StatusInternalServerError , gin.H{
-			"success":"failed" , 
+			"success":"failedwqdw" , 
 			"message":err.Error() ,
 		} )  
 	}
@@ -108,7 +182,7 @@ var dataByte = make([]byte ,fileinfo.Size() )
     buffWritten , err  := buffWriter.Write(dataWrite)
     if err !=nil{
 		ctx.JSON(http.StatusInternalServerError , gin.H{
-			"success":"failed" , 
+			"success":"failed11" , 
 			"message":err.Error() ,
 		} )  
 	}
