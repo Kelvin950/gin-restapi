@@ -72,15 +72,86 @@ func fetchAll(ctx *gin.Context){
 			"message":err.Error() ,
 		} )
 	}
-
+defer file.Close()
  
 
 	
 }
 func fetch(ctx *gin.Context){
+
+var persons []Person
+ name := ctx.Param("id") 
+ 
+ var person *Person
+
+
+  file, err := os.Open("data.json") 
+
+  if err ==nil{
+       
+	fileInfo  , err:= file.Stat()
+ 
+     if err ==nil{
+
+		 buffReader :=  bufio.NewReader(file) 
+
+	databyte := make([]byte , fileInfo.Size())
+
+	buffReader.Read(databyte) 
+          
+      err = json.Unmarshal(databyte ,&persons) 
+
+	  if err==nil{
+		   
+		for _ ,a := range persons{
+        
+			if a.Name == name {
+               
+				person = &a
+				break
+			}
+
+		}
+	  }else {
+		ctx.JSON(http.StatusInternalServerError , gin.H{
+			"success":"failed1d1" , 
+			"message":err.Error() ,
+		} )
+	  }
+	 }else{
+
+		ctx.JSON(http.StatusInternalServerError , gin.H{
+			"success":"failed1d1" , 
+			"message":err.Error() ,
+		} )
+	 }
+
+   
+	  
+  }else {
+	ctx.JSON(http.StatusInternalServerError , gin.H{
+			"success":"failed1d1" , 
+			"message":err.Error() ,
+		} )
+	
+  }
+ 
+  if person == nil {
+     ctx.JSON(http.StatusNotFound , gin.H{
+			"success":"failed1d1" , 
+			"message":"name not found" ,
+		} )
+  }else {
 	ctx.JSON(http.StatusOK , gin.H{
-		"hell":"2",
+		"success":true , 
+		"data": &person,
 	})
+  }
+  defer file.Close()
+
+
+
+	
 }
 
 func delete(ctx *gin.Context){
